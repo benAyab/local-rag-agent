@@ -1,0 +1,216 @@
+npm install @langchain/textsplitters @langchain/core
+
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
+
+const splitter = new RecursiveCharacterTextSplitter({ chunkSize: 1000, chunkOverlap: 200 })
+const texts = splitter.splitText(document)
+-------------------------------------------------------------------------
+npm i @langchain/ollama @langchain/core
+npm i @langchain/community
+
+import { OllamaEmbeddings } from "@langchain/ollama";
+
+const embeddings = new OllamaEmbeddings({
+  model: "mxbai-embed-large", // Default value
+  baseUrl: "http://localhost:11434", // Default value
+});
+-------------------------------------------------------------------
+npm install @langchain/ollama @langchain/core
+
+import { ChatOllama } from "@langchain/ollama"
+
+const llm = new ChatOllama({
+    model: "llama3",
+    temperature: 0,
+    maxRetries: 2,
+    // other params...
+})
+
+// Model invocation
+const aiMsg = await llm.invoke([
+    [
+        "system",
+        "You are a helpful assistant that translates English to French. Translate the user sentence.",
+    ],
+    ["human", "I love programming."],
+])
+
+
+// Tools
+import { tool } from "@langchain/core/tools";
+import { ChatOllama } from "@langchain/ollama";
+import * as z from "zod";
+
+const weatherTool = tool((_) => "Da weather is weatherin", {
+  name: "get_current_weather",
+  description: "Get the current weather in a given location",
+  schema: z.object({
+    location: z.string().describe("The city and state, e.g. San Francisco, CA"),
+  }),
+});
+
+// Define the model
+const llmForTool = new ChatOllama({
+  model: "llama3-groq-tool-use",
+});
+
+// Bind the tool to the model
+const llmWithTools = llmForTool.bindTools([weatherTool]);
+
+const resultFromTool = await llmWithTools.invoke(
+  "What's the weather like today in San Francisco? Ensure you use the 'get_current_weather' tool."
+);
+
+console.log(resultFromTool);
+
+
+// Structured output
+import { ChatOllama } from "@langchain/ollama";
+import { z } from "zod";
+
+// Define the schema
+const Country = z.object({
+  name: z.string(),
+  capital: z.string(),
+  languages: z.array(z.string()),
+});
+
+// Define the model
+const llm = new ChatOllama({
+  model: "llama3.1",
+  temperature: 0,
+});
+
+// Pass the schema to enforce a specific output format
+const structuredLlm = llm.withStructuredOutput(Country);
+
+const result = await structuredLlm.invoke("Tell me about Canada.");
+console.log(result);
+-------------------------------------------------------------------------
+npm install @langchain/community faiss-node @langchain/openai @langchain/core
+
+import { FaissStore } from "@langchain/community/vectorstores/faiss";
+import type { Document } from "@langchain/core/documents";
+
+const vectorStore = new FaissStore(embeddings, {});
+
+// Create the vector store from documents
+const vectorStore = await FaissStore.fromDocuments(docs, embeddings);
+
+const saveDirectory = "./faiss_index";
+
+// Check if directory exists, create if not
+try {
+  await fs.access(saveDirectory);
+} catch (e) {
+  await fs.mkdir(saveDirectory);
+}
+
+// Save the index to the specified directory
+await vectorStore.save(saveDirectory);
+console.log("FAISS index saved locally to:", saveDirectory);
+
+// Loaod local 
+const loadDirectory = "./faiss_index";
+const loadedVectorStore = await FaissStore.load(
+  loadDirectory,
+  embeddings
+);
+
+const document1: Document = {
+  pageContent: "The powerhouse of the cell is the mitochondria",
+  metadata: { source: "https://example.com" }
+};
+
+const document2: Document = {
+  pageContent: "Buildings are made out of brick",
+  metadata: { source: "https://example.com" }
+};
+
+const documents = [document1, document2];
+
+await vectorStore.addDocuments(documents, { ids: ["1", "2", "3", "4"] });
+-------------------------------------------------------------------------
+npm install @langchain/community @langchain/core pdf-parse
+import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf"
+
+const nike10kPdfPath = "../../../../data/nke-10k-2023.pdf"
+
+const loader = new PDFLoader(nike10kPdfPath)
+const docs = await loader.load()
+docs[0]
+
+console.log(docs[0].metadata)
+-------------------------------------------------------------------
+npm install @langchain/community @langchain/core d3-dsv@2
+
+import { CSVLoader } from "@langchain/community/document_loaders/fs/csv"
+
+const exampleCsvPath = "../langchain/src/document_loaders/tests/example_data/example_separator.csv";
+
+const loader = new CSVLoader(exampleCsvPath)
+-------------------------------------------------------------------
+npm install @langchain/community @langchain/core mammoth // for '.docx'
+npm install @langchain/community @langchain/core word-extractor // for '.doc'
+
+// .docx
+import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
+
+const loader = new DocxLoader(
+  "src/document_loaders/tests/example_data/attention.docx"
+);
+
+const docs = await loader.load();
+
+// .doc
+import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
+
+const loader = new DocxLoader(
+  "src/document_loaders/tests/example_data/attention.doc",
+  {
+    type: "doc",
+  }
+);
+const docs = await loader.load();
+------------------------------------------------------------------------
+npm install @langchain/langgraph @langchain/core
+
+
+import { StateSchema, MessagesValue, GraphNode, StateGraph, START, END } from "@langchain/langgraph";
+
+const State = new StateSchema({
+  messages: MessagesValue,
+});
+
+const mockLlm: GraphNode<typeof State> = (state) => {
+  return { messages: [{ role: "ai", content: "hello world" }] };
+};
+
+const graph = new StateGraph(State)
+  .addNode("mock_llm", mockLlm)
+  .addEdge(START, "mock_llm")
+  .addEdge("mock_llm", END)
+  .compile();
+
+await graph.invoke({ messages: [{ role: "user", content: "hi!" }] });
+
+--------------------------------------------------------------------------
+import { StateGraph, START, END } from "@langchain/langgraph";
+
+// 1. Define the State
+const GraphState = {
+  messages: { value: (x, y) => x.concat(y), default: () => [] },
+};
+
+// 2. Build the Graph
+const workflow = new StateGraph(GraphState)
+  .addNode("retrieve", retrieveNode)
+  .addNode("generate", generateNode)
+  .addEdge(START, "retrieve")
+  .addConditionalEdges("retrieve", shouldGenerate, {
+    continue: "generate",
+    retry: "retrieve",
+  })
+  .addEdge("generate", END);
+
+const app = workflow.compile();

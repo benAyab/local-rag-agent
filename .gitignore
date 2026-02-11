@@ -1,0 +1,49 @@
+node_modules
+**/node_modules/
+.env
+docker-compose.extra.yml
+dist
+*.bun-build
+pnpm-lock.yaml
+bun.lock
+bun.lockb
+coverage
+.pnpm-store
+.worktrees/
+.DS_Store
+**/.DS_Store
+ui/src/ui/__screenshots__/
+ui/playwright-report/
+ui/test-results/
+
+# Bun build artifacts
+*.bun-build
+bin/
+
+**/*.bun-build
+apps/ios/*.xcfilelist
+
+# Vendor build artifacts
+vendor/a2ui/renderers/lit/dist/
+src/canvas-host/a2ui/*.bundle.js
+src/canvas-host/a2ui/*.map
+.bundle.hash
+
+
+# fastlane build artifacts (local)
+apps/ios/*.ipa
+apps/ios/*.dSYM.zip
+
+# provisioning profiles (local)
+apps/ios/*.mobileprovision
+.env
+
+# Local untracked files
+.local/
+.vscode/
+IDENTITY.md
+USER.md
+.tgz
+
+# local tooling
+.serena/
