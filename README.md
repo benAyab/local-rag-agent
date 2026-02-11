@@ -16,5 +16,13 @@ Outils et technlogies
 Framework: LangChain et Langraph
 Base de données vectorielles: Mongodb
 LLM provider: Ollama 
---------------------------------------------------------------------------------------------------------
+
+Architecture:
 Frontend (HTML/JS) ↔ Backend (FastAPI) ↔ Agent RAG (LangChain/LangGraph) ↔ MongoDB Vector Store ↔ Ollama
+
+## RUN
+- cloner ce repo puis executer les commandes suivantes
+```bash
+  npm install
+  node Server
+```
