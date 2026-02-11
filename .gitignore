@@ -20,15 +20,10 @@ ui/test-results/
 *.bun-build
 bin/
 
-**/*.bun-build
-apps/ios/*.xcfilelist
-
-# Vendor build artifacts
-vendor/a2ui/renderers/lit/dist/
-src/canvas-host/a2ui/*.bundle.js
-src/canvas-host/a2ui/*.map
-.bundle.hash
-
+# FAISS stored data
+vector_data
+vector_data/*.json
+vector_data/*.index
 
 # fastlane build artifacts (local)
 apps/ios/*.ipa

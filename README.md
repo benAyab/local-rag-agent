@@ -20,8 +20,15 @@ LLM provider: Ollama
 Architecture:
 Frontend (HTML/JS) ↔ Backend (FastAPI) ↔ Agent RAG (LangChain/LangGraph) ↔ MongoDB Vector Store ↔ Ollama
 
+## prerequis:
+- Mongodb installé
+- nodejs 18+
+
 ## RUN
-- cloner ce repo puis executer les commandes suivantes
+- cloner ce repo
+- renommer env.example en .env puis renseigner les differentes valeurs
+- puis executer les commandes suivantes
+
 ```bash
   npm install
   node Server
